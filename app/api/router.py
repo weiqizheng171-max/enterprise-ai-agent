@@ -39,9 +39,9 @@ async def chat_with_rag(request: ChatRequest):
 
 @api_router.post("/chat/agent", response_model=ChatResponse)
 async def chat_with_agent(request: ChatRequest):
-    # ... (保持原有代码不变)
     try:
-        answer = process_agent_query(request.query)
+        # 注意这里：要把 request.session_id 也传进去！
+        answer = process_agent_query(request.query, request.session_id)
         return ChatResponse(answer=answer, source="Agent Tool Calling")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
