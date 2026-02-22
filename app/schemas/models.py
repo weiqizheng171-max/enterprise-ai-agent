@@ -1,0 +1,8 @@
+from pydantic import BaseModel, Field
+
+class ChatRequest(BaseModel):
+    query: str = Field(..., description="用户的查询问题", example="公司年假怎么休？")
+
+class ChatResponse(BaseModel):
+    answer: str
+    source: str = "Knowledge Base"
