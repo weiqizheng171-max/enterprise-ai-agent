@@ -8,7 +8,7 @@ from langchain_core.tools import tool
 from app.services.llm_service import get_llm
 from app.core.prompts import AGENT_SYSTEM_PROMPT
 
-# ================= 1. 定义你的工具 =================
+# 定义工具
 @tool
 def get_weather(location: str) -> str:
     """获取指定城市的天气情况。"""
@@ -21,10 +21,10 @@ def calculate_salary(gross_salary: float) -> float:
 
 tools = [get_weather, calculate_salary]
 
-# ================= 2. 初始化基础 Agent =================
+#初始化基础 Agent
 llm = get_llm()
 
-# 将普通字符串组装成 LangChain 标准的对话模板 (解决之前报错的核心)
+# 将普通字符串组装成 LangChain 标准的对话模板
 prompt = ChatPromptTemplate.from_messages([
     ("system", AGENT_SYSTEM_PROMPT), 
     MessagesPlaceholder(variable_name="chat_history"),     # 预留记忆空位
@@ -37,7 +37,7 @@ agent = create_tool_calling_agent(llm, tools, prompt)
 # 创建执行器
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
-# ================= 3. 会话记忆存储配置 =================
+#会话记忆存储配置
 # 模拟数据库，用来存不同用户的聊天记录 (生产环境会用 Redis)
 session_store = {}
 
@@ -47,7 +47,7 @@ def get_session_history(session_id: str) -> BaseChatMessageHistory:
         session_store[session_id] = ChatMessageHistory()
     return session_store[session_id]
 
-# 给 Agent 穿上“记忆装甲”
+# 让Agent有记忆
 agent_with_chat_history = RunnableWithMessageHistory(
     agent_executor,
     get_session_history,
@@ -55,7 +55,7 @@ agent_with_chat_history = RunnableWithMessageHistory(
     history_messages_key="chat_history" # 历史记录存放在 prompt 中的 key
 )
 
-# ================= 4. 暴露给外部的主函数 =================
+#暴露给外部的主函数
 def process_agent_query(query: str, session_id: str) -> str:
     """
     处理 Agent 查询，带记忆功能

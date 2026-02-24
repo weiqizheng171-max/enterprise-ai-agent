@@ -5,16 +5,14 @@ from app.services.agent_service import process_agent_query
 
 api_router = APIRouter()
 
-# ================= 新增：文件上传入库接口 =================
+# 文件上传入库接口
 @api_router.post("/knowledge/upload")
 async def upload_document(file: UploadFile = File(...)):
     try:
         # 读取上传的文件内容
         content = await file.read()
-        # 这里为了演示，我们假设上传的是 .txt 纯文本文件 (UTF-8编码)
         text_content = content.decode("utf-8")
-        
-        # 调用 RAG 服务进行切片和向量化
+        # 调用 RAG 服务切片和向量化
         chunk_count = ingest_text_to_vectorstore(text_content)
         
         return {
@@ -26,11 +24,9 @@ async def upload_document(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="目前仅支持 UTF-8 编码的 TXT 文件")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-# ==========================================================
 
 @api_router.post("/chat/rag", response_model=ChatResponse)
 async def chat_with_rag(request: ChatRequest):
-    # ... (保持原有代码不变)
     try:
         answer = process_rag_query(request.query)
         return ChatResponse(answer=answer, source="RAG Knowledge Base")
@@ -40,7 +36,6 @@ async def chat_with_rag(request: ChatRequest):
 @api_router.post("/chat/agent", response_model=ChatResponse)
 async def chat_with_agent(request: ChatRequest):
     try:
-        # 注意这里：要把 request.session_id 也传进去！
         answer = process_agent_query(request.query, request.session_id)
         return ChatResponse(answer=answer, source="Agent Tool Calling")
     except Exception as e:
